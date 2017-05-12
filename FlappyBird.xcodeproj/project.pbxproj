@@ -19,6 +19,7 @@
 		A299B6B51EBEBDC400395261 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A299B6B31EBEBDC400395261 /* LaunchScreen.storyboard */; };
 		A299B6BE1EBEBE1300395261 /* SpriteKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A299B6BD1EBEBE1300395261 /* SpriteKit.framework */; };
 		A299B6C21EBEC13000395261 /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = A299B6C11EBEC13000395261 /* GameScene.swift */; };
+		A2B395851EC66CC30060A97F /* scoreup.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = A2B395841EC66CC30060A97F /* scoreup.mp3 */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,6 +37,7 @@
 		A299B6B61EBEBDC400395261 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A299B6BD1EBEBE1300395261 /* SpriteKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SpriteKit.framework; path = System/Library/Frameworks/SpriteKit.framework; sourceTree = SDKROOT; };
 		A299B6C11EBEC13000395261 /* GameScene.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
+		A2B395841EC66CC30060A97F /* scoreup.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = scoreup.mp3; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +59,7 @@
 				A27892D01EC4C342008D53F1 /* item.mp3 */,
 				A27892D11EC4C342008D53F1 /* down.mp3 */,
 				A20626DE1EC507EC002E8179 /* protect.mp3 */,
+				A2B395841EC66CC30060A97F /* scoreup.mp3 */,
 			);
 			name = Sound;
 			sourceTree = "<group>";
@@ -164,6 +167,7 @@
 			files = (
 				A20626DF1EC507EC002E8179 /* protect.mp3 in Resources */,
 				A299B6B51EBEBDC400395261 /* LaunchScreen.storyboard in Resources */,
+				A2B395851EC66CC30060A97F /* scoreup.mp3 in Resources */,
 				A27892D31EC4C342008D53F1 /* jump.mp3 in Resources */,
 				A299B6B21EBEBDC400395261 /* Assets.xcassets in Resources */,
 				A299B6B01EBEBDC400395261 /* Main.storyboard in Resources */,

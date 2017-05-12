@@ -29,6 +29,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let scoreCategory: UInt32  = 1 << 3     // 0...01000
     let itemCategory: UInt32   = 1 << 4     // 0...10000
     
+    // アイテムアクションの保持用
+    var wallAction: SKAction!
+    var itemAction: SKAction!
+    
     // スコア、アイテム
     var score = 0
     var item = 0
@@ -38,6 +42,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let itemSound = SKAudioNode.init(fileNamed: "item.mp3")
     let downSound = SKAudioNode.init(fileNamed: "down.mp3")
     let protectSound = SKAudioNode.init(fileNamed: "protect.mp3")
+    let scoreSound = SKAudioNode.init(fileNamed: "scoreup.mp3")
 
     // ユーザーデフォルトを初期化
     let userDefaults:UserDefaults = UserDefaults.standard
@@ -58,14 +63,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         scrollNode = SKNode()  // ノード作成
         scrollNode.speed = 1.2 // ノードの速度（1がデフォルト）
         addChild(scrollNode)   // GameSceneにノード追加
-        
-        // 壁用のノード
-        wallNode = SKNode()           // ノード作成
-        scrollNode.addChild(wallNode) // scrollNodeに追加
-
-        // アイテム用のノード
-        itemNode = SKNode()           // ノード作成
-        scrollNode.addChild(itemNode) // scrollNodeに追加
 
         // 各種スプライトを生成するメソッド
         setupGround() // 地面
@@ -79,6 +76,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // サウンド初期化
         setupSound()
+        
+        // ゲームスタート
+        restart()
     }
 
     /// フレームが更新される前に呼ばれる
@@ -138,7 +138,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             // スコア用の物体と衝突した場合
             score += 1
             scoreLabelNode.text = "Score:\(score)" // スコアを描画
-            
+
+            // 効果音
+            let playSound = SKAction.play()
+            let playVolume = SKAction.changeVolume(to: 1.5, duration: 0) // ボリュームアップ
+            let playScoreSound = SKAction.sequence([playVolume, playSound])
+            scoreSound.run(playScoreSound)
+
             // ベストスコアか確認する
             var bestScore = userDefaults.integer(forKey: "BEST") // ユーザーデフォルトから key:BEST で整数値を取得。無ければ0が帰る。
             if score > bestScore {
@@ -236,6 +242,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // ガッツ消費音
         protectSound.autoplayLooped = false
         self.addChild(protectSound)
+
+        // スコアアップ音
+        scoreSound.autoplayLooped = false
+        self.addChild(scoreSound)
     }
     
     /// 地面を生成する
@@ -400,9 +410,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // 壁を作成->待ち時間->壁を作成を無限に繰り替えるアクションを作成
         let repeatForeverAnimation = SKAction.repeatForever(SKAction.sequence([createWallAnimation, waitAnimation]))
+
+        // アクションをプロパティに保存（アクションリセットのため）
+        wallAction = SKAction.sequence([waitAnimation, repeatForeverAnimation])
         
-        // 壁用ノードにアクションを設定
-        wallNode.run(repeatForeverAnimation)
+        wallNode = SKNode()           // ノード作成
+        scrollNode.addChild(wallNode) // scrollNodeに追加
     }
 
     /// アイテムを生成する
@@ -464,14 +477,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         })
         
         // 次のアイテム作成までの待ち時間のアクションを作成
-        let waitAnimation_1 = SKAction.wait(forDuration: 1) // 1秒待つ
-        let waitAnimation_14 = SKAction.wait(forDuration: 14) // 14秒待つ
+        let waitAnimation_1 = SKAction.wait(forDuration: 1)  // 1秒待つ
+        let waitAnimation_2 = SKAction.wait(forDuration: 14) // 14秒待つ
         
         // アイテムを作成->待ち時間->アイテムを作成を無限に繰り替えるアクションを作成
-        let repeatForeverAnimation = SKAction.repeatForever(SKAction.sequence([createItemAnimation, waitAnimation_14]))
+        let repeatForeverAnimation = SKAction.repeatForever(SKAction.sequence([createItemAnimation, waitAnimation_2]))
+
+        // アクションをプロパティに保存（アクションリセットのため）
+        itemAction = SKAction.sequence([waitAnimation_1, repeatForeverAnimation])
         
-        // ノードにアクションを設定
-        itemNode.run(SKAction.sequence([waitAnimation_1, repeatForeverAnimation]))
+        itemNode = SKNode()           // ノード作成
+        scrollNode.addChild(itemNode) // scrollNodeに追加
+
     }
     
     /// 鳥を生成する
@@ -507,7 +524,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         // アニメーションを設定
         bird.run(flap)
 
-        // scrollNodeに追加する
+        // GameSceneに追加する
         addChild(bird)
     }
 
@@ -528,6 +545,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         wallNode.removeAllChildren()      // 全ての壁を取り除く
         itemNode.removeAllChildren()      // 全てのアイテムを取り除く
         statusLabelNode.text = String("") // ステータス表示クリア
+
+        // 壁とアイテムのアクションをリセット
+        wallNode.removeAction(forKey: "WallAnim")     // 指定keyのアクションを削除
+        itemNode.removeAction(forKey: "ItemAnim")
+        wallNode.run(wallAction, withKey: "WallAnim") // ノードにアクションを設定し、keyを設定する
+        itemNode.run(itemAction, withKey: "ItemAnim")
         
         // アクションを通常の速度に戻す
         bird.speed = 1
@@ -543,7 +566,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
         // 効果音
         let playSound = SKAction.play()
-        downSound.run(playSound)
+        let playVolume = SKAction.changeVolume(to: 3.0, duration: 0) // ボリュームアップ
+        let playDownSound = SKAction.sequence([playVolume, playSound])
+        downSound.run(playDownSound)
         
         // 落下時は地面とだけ衝突させる
         bird.physicsBody?.collisionBitMask = groundCategory
@@ -553,7 +578,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         bird.run(roll, completion:{
             // アクションが完了したら動きを停止させる
             self.bird.speed = 0
-            print("GameOver")
             self.statusLabelNode.text = String("GAME OVER") // ステータス表示
         })
     }
